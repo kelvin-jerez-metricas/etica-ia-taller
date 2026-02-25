@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Puedo subirlo a una IA?</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: rgba(255,255,255,0.08);
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --green: #2ea043;
+    --green-light: #3fb950;
+    --green-bg: rgba(46,160,67,0.12);
+    --green-border: rgba(63,185,80,0.4);
+    --yellow: #d29922;
+    --yellow-light: #e3b341;
+    --yellow-bg: rgba(210,153,34,0.12);
+    --yellow-border: rgba(227,179,65,0.4);
+    --red: #da3633;
+    --red-light: #f85149;
+    --red-bg: rgba(218,54,51,0.12);
+    --red-border: rgba(248,81,73,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(46,160,67,0.08), transparent);
+    pointer-events: none;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    position: relative;
+  }
+
+  .header {
+    text-align: center;
+    padding: 32px 0 28px;
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--yellow-light);
+    border: 1px solid var(--yellow-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 6vw, 40px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 20px 0 0;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-green { background: var(--green-light); }
+  .dot-yellow { background: var(--yellow-light); }
+  .dot-red { background: var(--red-light); }
+
+  /* Progress */
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin: 24px 0 0;
+  }
+
+  .progress-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--muted);
+    transition: all 0.3s;
+  }
+  .progress-dot.active { background: var(--yellow-light); border-color: var(--yellow-light); box-shadow: 0 0 8px var(--yellow); }
+  .progress-dot.done { background: var(--muted); border-color: var(--muted); }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-top: 28px;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .scenario-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .scenario-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .scenario-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .scenario-text {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .scenario-text strong { color: white; }
+
+  /* Buttons */
+  .vote-btns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  .vote-btn {
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 16px 10px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .vote-btn:disabled { cursor: default; }
+
+  .btn-green {
+    background: var(--green-bg);
+    border-color: var(--green-border);
+    color: var(--green-light);
+  }
+  .btn-green:hover:not(:disabled) {
+    background: rgba(46,160,67,0.22);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(46,160,67,0.2);
+  }
+
+  .btn-yellow {
+    background: var(--yellow-bg);
+    border-color: var(--yellow-border);
+    color: var(--yellow-light);
+  }
+  .btn-yellow:hover:not(:disabled) {
+    background: rgba(210,153,34,0.22);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(210,153,34,0.2);
+  }
+
+  .btn-red {
+    background: var(--red-bg);
+    border-color: var(--red-border);
+    color: var(--red-light);
+  }
+  .btn-red:hover:not(:disabled) {
+    background: rgba(218,54,51,0.22);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(218,54,51,0.2);
+  }
+
+  .btn-emoji { font-size: 26px; }
+  .btn-label { font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; letter-spacing: 0.05em; }
+
+  .vote-btn.selected-correct {
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px currentColor;
+  }
+
+  .vote-btn.selected-wrong {
+    opacity: 0.35;
+  }
+
+  .vote-btn.reveal-correct {
+    animation: glow 0.5s ease both;
+  }
+
+  @keyframes glow {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1.04); }
+  }
+
+  /* Result reveal */
+  .result-reveal {
+    margin-top: 20px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.4s ease 0.2s;
+    display: none;
+  }
+
+  .result-reveal.show {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .result-badge {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .badge-green { background: var(--green-bg); color: var(--green-light); border: 1px solid var(--green-border); }
+  .badge-yellow { background: var(--yellow-bg); color: var(--yellow-light); border: 1px solid var(--yellow-border); }
+  .badge-red { background: var(--red-bg); color: var(--red-light); border: 1px solid var(--red-border); }
+
+  .result-correct-tag {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .result-explanation {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--muted);
+    border-left: 3px solid var(--border);
+  }
+
+  .result-explanation strong { color: var(--text); }
+
+  .result-explanation.border-green { border-left-color: var(--green-light); }
+  .result-explanation.border-yellow { border-left-color: var(--yellow-light); }
+  .result-explanation.border-red { border-left-color: var(--red-light); }
+
+  .next-btn {
+    display: none;
+    width: 100%;
+    margin-top: 18px;
+    padding: 15px;
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+  }
+
+  .next-btn:hover { background: var(--surface); border-color: rgba(255,255,255,0.25); }
+  .next-btn.visible { display: block; animation: fadeUp 0.3s ease 0.7s both; }
+
+  /* Final */
+  .final-screen { display: none; }
+  .final-screen.show { display: block; animation: fadeUp 0.5s ease both; }
+
+  .final-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px 28px;
+    margin-top: 28px;
+    text-align: center;
+  }
+
+  .score-circles {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .score-circle {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 2px solid var(--border);
+  }
+
+  .circle-correct { background: var(--green-bg); border-color: var(--green-border); }
+  .circle-wrong { background: var(--red-bg); border-color: var(--red-border); }
+
+  .final-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .final-score {
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .final-score strong { color: var(--text); }
+
+  .rule-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+
+  .rule-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--yellow-light);
+    margin-bottom: 14px;
+  }
+
+  .rule-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    align-items: flex-start;
+  }
+
+  .rule-item:last-child { margin-bottom: 0; }
+
+  .rule-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .rule-item p { color: var(--muted); }
+  .rule-item strong { color: var(--text); }
+
+  .gold-rule {
+    background: rgba(210,153,34,0.08);
+    border: 1px solid var(--yellow-border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .gold-rule span { color: var(--yellow-light); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+  .restart-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 22px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+  @media (max-width: 420px) {
+    .vote-btn { padding: 14px 6px; }
+    .btn-emoji { font-size: 22px; }
+    .btn-label { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="tag">Tema V · Ética en el Uso de la IA</div>
+    <h1>¿Puedo subirlo<br>a una IA pública?</h1>
+    <p class="subtitle">Clasifica cada escenario antes de compartir información del Estado con herramientas como ChatGPT.</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot dot-green"></div>Verde — permitido</div>
+      <div class="legend-item"><div class="legend-dot dot-yellow"></div>Amarillo — precaución</div>
+      <div class="legend-item"><div class="legend-dot dot-red"></div>Rojo — no subir</div>
+    </div>
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <div id="quizArea">
+    <div class="card" id="questionCard">
+      <div class="scenario-num" id="scenarioNum">Escenario 1 de 4</div>
+      <div class="scenario-box">
+        <span class="scenario-icon" id="scenarioIcon"></span>
+        <div class="scenario-text" id="scenarioText"></div>
+      </div>
+      <div class="vote-btns">
+        <button class="vote-btn btn-green" onclick="vote('green')" id="btnGreen">
+          <span class="btn-emoji">🟢</span>
+          <span class="btn-label">Verde</span>
+        </button>
+        <button class="vote-btn btn-yellow" onclick="vote('yellow')" id="btnYellow">
+          <span class="btn-emoji">🟡</span>
+          <span class="btn-label">Amarillo</span>
+        </button>
+        <button class="vote-btn btn-red" onclick="vote('red')" id="btnRed">
+          <span class="btn-emoji">🔴</span>
+          <span class="btn-label">Rojo</span>
+        </button>
+      </div>
+      <div class="result-reveal" id="resultReveal">
+        <div class="result-header">
+          <div class="result-badge" id="resultBadge"></div>
+          <div class="result-correct-tag" id="resultTag"></div>
+        </div>
+        <div class="result-explanation" id="resultExplanation"></div>
+      </div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Siguiente escenario →</button>
+    </div>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-card">
+      <div class="score-circles" id="scoreCircles"></div>
+      <div class="final-title" id="finalTitle"></div>
+      <div class="final-score" id="finalScore"></div>
+
+      <div class="rule-box">
+        <div class="rule-title">🚦 La regla del semáforo</div>
+        <div class="rule-item">
+          <div class="rule-dot dot-green"></div>
+          <p><strong>Verde:</strong> Información pública — leyes, decretos, comunicados de prensa, datos ya publicados.</p>
+        </div>
+        <div class="rule-item">
+          <div class="rule-dot dot-yellow"></div>
+          <p><strong>Amarillo:</strong> Documentos internos no clasificados, borradores de política, estadísticas no anonimizadas. <strong>Piénsalo dos veces.</strong></p>
+        </div>
+        <div class="rule-item">
+          <div class="rule-dot dot-red"></div>
+          <p><strong>Rojo:</strong> Datos personales de ciudadanos, expedientes médicos, información financiera confidencial, documentos clasificados. <strong>Nunca.</strong></p>
+        </div>
+      </div>
+
+      <div class="gold-rule">
+        <span>⚖️ La Regla de Oro:</span> La IA asiste, el humano decide y firma. <strong>Tú eres el responsable final del resultado.</strong>
+      </div>
+
+      <button class="restart-btn" onclick="restart()">↩ Intentarlo de nuevo</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const scenarios = [
+  {
+    icon: "📄",
+    text: `Tu directora te pide que uses ChatGPT para <strong>resumir la Ley 41-08 de Función Pública</strong> y prepares un resumen ejecutivo para la reunión de mañana.`,
+    answer: "green",
+    explanation: {
+      green: "✅ Correcto. La Ley 41-08 es información pública, publicada en la Gaceta Oficial y disponible para todos. Puedes subirla sin problema y pedirle a la IA que la resuma.",
+      yellow: "Casi. Esta información es completamente pública. No hay razón para tener precaución — las leyes publicadas son siempre zona verde.",
+      red: "No en este caso. Las leyes son información pública por definición. ChatGPT puede trabajar con ellas sin ningún riesgo de confidencialidad."
+    },
+    color: "green"
+  },
+  {
+    icon: "🏥",
+    text: `Recibes un Excel con <strong>nombres, cédulas y diagnósticos médicos de 500 pacientes</strong> del sistema de salud. Quieres subirlo a ChatGPT para que te ayude a analizar las tendencias.`,
+    answer: "red",
+    explanation: {
+      green: "No. Nombres, cédulas y diagnósticos son datos personales sensibles protegidos por la Ley 172-13. Subirlos a una IA pública es una violación directa de privacidad.",
+      yellow: "La precaución no es suficiente aquí. Datos médicos con identificación de personas es zona roja sin excepciones. La Ley 172-13 lo prohíbe claramente.",
+      red: "✅ Correcto. Datos personales de salud con cédulas son información sensible protegida. Nunca deben salir de los sistemas seguros del Estado hacia herramientas públicas."
+    },
+    color: "red"
+  },
+  {
+    icon: "📊",
+    text: `Tienes un informe interno con <strong>estadísticas de deserción escolar por provincia</strong>, preparado para uso interno del Ministerio. Los datos no tienen nombres de personas pero aún no han sido publicados oficialmente.`,
+    answer: "yellow",
+    explanation: {
+      green: "Cuidado. Aunque no hay datos personales, este informe no ha sido publicado oficialmente. Compartirlo en una herramienta pública podría filtrar información antes de que el Ministerio decida hacerlo oficial.",
+      yellow: "✅ Correcto. No hay datos personales, pero el documento es interno y no publicado. Úsalo con precaución: valida con tu supervisor si es apropiado o espera a que sea información oficial.",
+      red: "No llega a ser rojo porque no hay datos de personas identificadas. Pero sí amerita precaución por ser un documento interno no publicado."
+    },
+    color: "yellow"
+  },
+  {
+    icon: "📁",
+    text: `Estás preparando una licitación. Tu jefe te pide usar IA para <strong>redactar el pliego de condiciones</strong> usando como base el pliego de una licitación anterior que ya fue adjudicada y está publicada en el portal de DGCP.`,
+    answer: "green",
+    explanation: {
+      green: "✅ Correcto. Los pliegos publicados en el portal de DGCP son documentos públicos. Usarlos como base para redactar con IA es una aplicación legítima y eficiente de la tecnología.",
+      yellow: "No es necesaria tanta precaución. Si el pliego está publicado oficialmente en DGCP, es información pública disponible para cualquier ciudadano.",
+      red: "No aplica aquí. La información ya está publicada oficialmente. El riesgo sería si usaras un pliego interno no publicado o con información de oferentes."
+    },
+    color: "green"
+  }
+];
+
+let current = 0;
+let score = 0;
+let results = [];
+let answered = false;
+
+function init() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  scenarios.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+    dot.id = `dot-${i}`;
+    bar.appendChild(dot);
+  });
+  renderScenario();
+}
+
+function renderScenario() {
+  answered = false;
+  const s = scenarios[current];
+
+  document.getElementById('scenarioNum').textContent = `Escenario ${current + 1} de ${scenarios.length}`;
+  document.getElementById('scenarioIcon').textContent = s.icon;
+  document.getElementById('scenarioText').innerHTML = s.text;
+
+  ['btnGreen','btnYellow','btnRed'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.disabled = false;
+    btn.classList.remove('selected-correct','selected-wrong','reveal-correct');
+    btn.style.opacity = '';
+  });
+
+  const reveal = document.getElementById('resultReveal');
+  reveal.classList.remove('show');
+  reveal.style.display = 'none';
+  document.getElementById('nextBtn').classList.remove('visible');
+}
+
+function vote(choice) {
+  if (answered) return;
+  answered = true;
+
+  const s = scenarios[current];
+  const isCorrect = choice === s.answer;
+  if (isCorrect) score++;
+  results.push(isCorrect);
+
+  const colorMap = { green: 'btnGreen', yellow: 'btnYellow', red: 'btnRed' };
+  const answerBtnId = colorMap[s.answer];
+  const chosenBtnId = colorMap[choice];
+
+  ['btnGreen','btnYellow','btnRed'].forEach(id => {
+    document.getElementById(id).disabled = true;
+  });
+
+  if (isCorrect) {
+    document.getElementById(chosenBtnId).classList.add('selected-correct', 'reveal-correct');
+  } else {
+    document.getElementById(chosenBtnId).classList.add('selected-wrong');
+    document.getElementById(answerBtnId).classList.add('reveal-correct');
+  }
+
+  // Result badge
+  const badgeEl = document.getElementById('resultBadge');
+  const tagEl = document.getElementById('resultTag');
+  const explanationEl = document.getElementById('resultExplanation');
+
+  const colorLabels = { green: 'Verde — Permitido', yellow: 'Amarillo — Precaución', red: 'Rojo — No subir' };
+  const badgeClass = { green: 'badge-green', yellow: 'badge-yellow', red: 'badge-red' };
+  const borderClass = { green: 'border-green', yellow: 'border-yellow', red: 'border-red' };
+
+  badgeEl.textContent = colorLabels[s.answer];
+  badgeEl.className = `result-badge ${badgeClass[s.answer]}`;
+  tagEl.textContent = isCorrect ? '✓ Acertaste' : '✗ La respuesta correcta era esta';
+  explanationEl.textContent = '';
+  explanationEl.innerHTML = s.explanation[choice];
+  explanationEl.className = `result-explanation ${borderClass[s.answer]}`;
+
+  const reveal = document.getElementById('resultReveal');
+  reveal.style.display = 'block';
+  setTimeout(() => reveal.classList.add('show'), 50);
+
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.textContent = current < scenarios.length - 1 ? 'Siguiente escenario →' : 'Ver resultados →';
+  setTimeout(() => nextBtn.classList.add('visible'), 700);
+}
+
+function nextQuestion() {
+  document.getElementById(`dot-${current}`).classList.remove('active');
+  document.getElementById(`dot-${current}`).classList.add('done');
+  current++;
+
+  if (current >= scenarios.length) {
+    showFinal();
+    return;
+  }
+
+  document.getElementById(`dot-${current}`).classList.add('active');
+
+  const card = document.getElementById('questionCard');
+  card.style.transition = 'none';
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(12px)';
+
+  setTimeout(() => {
+    renderScenario();
+    card.style.transition = 'all 0.35s ease';
+    card.style.opacity = '1';
+    card.style.transform = 'translateY(0)';
+  }, 250);
+}
+
+function showFinal() {
+  document.getElementById('quizArea').style.display = 'none';
+  const final = document.getElementById('finalScreen');
+  final.classList.add('show');
+
+  // Score circles
+  const circles = document.getElementById('scoreCircles');
+  circles.innerHTML = '';
+  results.forEach(r => {
+    const c = document.createElement('div');
+    c.className = `score-circle ${r ? 'circle-correct' : 'circle-wrong'}`;
+    c.textContent = r ? '✓' : '✗';
+    circles.appendChild(c);
+  });
+
+  const titles = ['Sigue practicando', 'Buen intento', '¡Casi perfecto!', '¡Criterio de servidor público!'];
+  const scores = [
+    `Acertaste <strong>${score} de ${scenarios.length}</strong> escenarios. Lo importante es que ya sabes dónde están los riesgos.`,
+    `Acertaste <strong>${score} de ${scenarios.length}</strong> escenarios. Estás desarrollando buen criterio para proteger la información del Estado.`,
+    `Acertaste <strong>${score} de ${scenarios.length}</strong> escenarios. Tienes muy claro el límite entre lo público y lo confidencial.`,
+    `Acertaste <strong>${score} de ${scenarios.length}</strong> escenarios. Aplicaste el marco ético correctamente en todos los casos.`
+  ];
+
+  document.getElementById('finalTitle').textContent = titles[score];
+  document.getElementById('finalScore').innerHTML = scores[score];
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  results = [];
+  document.getElementById('finalScreen').classList.remove('show');
+  document.getElementById('quizArea').style.display = 'block';
+  init();
+}
+
+init();
+</script>
+</body>
+</html>
